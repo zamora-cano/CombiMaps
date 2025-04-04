@@ -1,153 +1,162 @@
 Table roles{
-    id int [pk, increment]
-    nombre varchar(20) [not null, unique]
+  id int [pk, increment]
+  nombre varchar(20) [not null, unique]
+
+}
+Table permisos{
+  id int [pk, increment]
+  name varchar(20)
+}
+Table rol_has_permiso{
+  id int [pk, unique]
+  id_rol int [ref: > roles.id]
+  id_permiso int [ref: > permisos.id]
+}
+
+Table planes {
+  id int [pk, increment]
+  nombre varchar(50) [not null]
+  descripcion text
+  precio decimal(10,2) [not null]
+  duracion_dias int [not null] // Duración del plan en días
+  beneficios text // Beneficios adicionales
+  activo boolean [default: true]
+}
+
+Table suscripciones {
+  id int [pk, increment]
+  usuario_id int [ref: > usuarios.id]
+  plan_id int [ref: > planes.id]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  estado varchar(20) [default: "activo"] // activo, cancelado, vencido
+  metodo_pago varchar(30) // opcional: "tarjeta", "paypal", etc.
+  transaccion_id varchar(100) // ID de la transacción en el gateway de pago
+}
+
+Table reseñas {
+  id int [pk, increment]
+  usuario_id int [ref: > usuarios.id]
+  ruta_id int [ref: > ruta.id]
+  calificacion int [not null] // Ej: 1-5 estrellas
+  comentario text
+  fecha_creacion timestamp [default: `now()`]
+}
+
+Table usuarios {
+  id int [pk, increment]
+  rol int [ref: > roles.id]
+  
+  nombre varchar(50) [not null]
+  ape_pat varchar(50) [not null]
+  ape_mat varchar(50)
+  email varchar(70) [not null, unique]
+  contrasena varchar(120) [not null]
+  fecha_nacimiento date
+  verificado boolean [default: false]
+
+  created_at timestamp [default: `now()`]
+}
+
+Table ruta_paradas {
+  id int [pk, increment]
+  ruta_id int [ref: > ruta.id]
+  parada_id int [ref: > paradas.id]
+  orden int [not null]
+  tiempo_desde_inicio int // En minutos
+}
+
+Table modelos {
+  id int [pk, increment]
+  esquema int [ref: > esquemas_color.id]
+
+  nombre varchar(50) [not null, unique] // Ej: "Modelo Clásico 2023"
+  descripcion text
+  archivo_3d varchar(255) [not null] // Ruta al archivo .glb o .fbx
+  preview_url varchar(255) // Imagen miniatura
+  autor varchar(100)
+  fecha_creacion timestamp [default: `now()`]
+  escalado decimal(5,2) [default: 1.0] // Ajuste de escala para el modelo
+}
+
+Table esquemas_color {
+  id int [pk, increment]
+  nombre varchar(50) [not null] // Ej: "Clásico rojo-blanco"
+  color_base varchar(7) [not null] // Hex (#FFFFFF)
+  color_secundario varchar(7)
+  color_detalle varchar(7)
+  patron varchar(20) [not null] // 'raya_simple', 'dos_rayas', 'top_color', etc.
+  es_predeterminado boolean [default: false]
+}
+
+Table ruta {
+  id int [pk, increment]
+  modelo_id int [ref: > modelos.id] // Transporte asignado (opcional)
+
+  nombre varchar(100) [not null] // Ej: "Ruta 12 - Centro a Campus"
+  descripcion varchar(200)
+  origen varchar(100) [not null] // Punto de inicio
+  destino varchar(100) [not null] // Punto final
+
+  precio_base decimal(10,2)
+  es_nocturna boolean [default: false]
+  activa boolean [default: true]
+  icono varchar(30) // Para mapa
+  color_hex varchar(7) // Color representativo (#FF5733)
+
+  requiere_premium boolean [default: false] // Si es una ruta exclusiva para premium
+
+  usuario_creador_id int [ref: > usuarios.id]
+  fecha_creacion date
+  usuario_editor_id int [ref: > usuarios.id]
+  fecha_edicion date
+  usuario_eliminacion_id int [ref: > usuarios.id]
+  fecha_eliminacion date
+}
+Table horarios {
+  id int [pk, increment]
+  ruta_id int [ref: > ruta.id]
+  dia_semana varchar(10) [not null] // Lunes, Martes... Domingo, Festivos
+  hora_inicio time [not null]
+  hora_fin time [not null]
+  frecuencia_pico int // Minutos entre unidades
+  frecuencia_normal int
+}
+Table coordenadas {
+  id int [pk, increment]
+  ruta_id int [ref: > ruta.id]
+  latitud decimal(10, 6) [not null]
+  longitud decimal(10, 6) [not null]
+  orden int [not null] // Para definir el recorrido (1, 2, 3...)
+}
+
+Table favoritos {
+  id int [pk, increment]
+  usuario_id int [ref: > usuarios.id]
+  ruta_id int [ref: > ruta.id]
+  created_at timestamp [default: `now()`]
+}
+
+Table fotos{
+  id int [pk, increment]
+  nombre varchar(50)
+  descripcion varchar(255)
+  extencion varchar(15)
+  path varchar(150)
+  
   
   }
-  Table permisos{
-    id int [pk, increment]
-    name varchar(20)
-  }
-  Table rol_has_permiso{
-    id int [pk, unique]
-    id_rol int [ref: > roles.id]
-    id_permiso int [ref: > permisos.id]
-  }
-  
-  Table planes {
-    id int [pk, increment]
-    nombre varchar(50) [not null]
-    descripcion text
-    precio decimal(10,2) [not null]
-    duracion_dias int [not null] // Duración del plan en días
-    beneficios text // Beneficios adicionales
-    activo boolean [default: true]
-  }
-  
-  Table suscripciones {
-    id int [pk, increment]
-    usuario_id int [ref: > usuarios.id]
-    plan_id int [ref: > planes.id]
-    fecha_inicio date [not null]
-    fecha_fin date [not null]
-    estado varchar(20) [default: "activo"] // activo, cancelado, vencido
-    metodo_pago varchar(30) // opcional: "tarjeta", "paypal", etc.
-    transaccion_id varchar(100) // ID de la transacción en el gateway de pago
-  }
-  
-  Table reseñas {
-    id int [pk, increment]
-    usuario_id int [ref: > usuarios.id]
-    ruta_id int [ref: > ruta.id]
-    calificacion int [not null] // Ej: 1-5 estrellas
-    comentario text
-    fecha_creacion timestamp [default: `now()`]
-  }
-  
-  Table usuarios {
-    id int [pk, increment]
-    rol int [ref: > roles.id]
-    
-    nombre varchar(50) [not null]
-    ape_pat varchar(50) [not null]
-    ape_mat varchar(50)
-    email varchar(70) [not null, unique]
-    contrasena varchar(120) [not null]
-    fecha_nacimiento date
-    verificado boolean [default: false]
-  
-    created_at timestamp [default: `now()`]
-  }
-  
-  Table ruta_paradas {
-    id int [pk, increment]
-    ruta_id int [ref: > ruta.id]
-    parada_id int [ref: > paradas.id]
-    orden int [not null]
-    tiempo_desde_inicio int // En minutos
-  }
-  
-  Table modelos {
-    id int [pk, increment]
-    esquema int [ref: > esquemas_color.id]
-  
-    nombre varchar(50) [not null, unique] // Ej: "Modelo Clásico 2023"
-    descripcion text
-    archivo_3d varchar(255) [not null] // Ruta al archivo .glb o .fbx
-    preview_url varchar(255) // Imagen miniatura
-    autor varchar(100)
-    fecha_creacion timestamp [default: `now()`]
-    escalado decimal(5,2) [default: 1.0] // Ajuste de escala para el modelo
-  }
-  
-  Table esquemas_color {
-    id int [pk, increment]
-    nombre varchar(50) [not null] // Ej: "Clásico rojo-blanco"
-    color_base varchar(7) [not null] // Hex (#FFFFFF)
-    color_secundario varchar(7)
-    color_detalle varchar(7)
-    patron varchar(20) [not null] // 'raya_simple', 'dos_rayas', 'top_color', etc.
-    es_predeterminado boolean [default: false]
-  }
-  
-  Table ruta {
-    id int [pk, increment]
-    modelo_id int [ref: > modelos.id] // Transporte asignado (opcional)
-  
-    nombre varchar(100) [not null] // Ej: "Ruta 12 - Centro a Campus"
-    descripcion varchar(200)
-    origen varchar(100) [not null] // Punto de inicio
-    destino varchar(100) [not null] // Punto final
-  
-    precio_base decimal(10,2)
-    es_nocturna boolean [default: false]
-    activa boolean [default: true]
-    icono varchar(30) // Para mapa
-    color_hex varchar(7) // Color representativo (#FF5733)
-  
-    requiere_premium boolean [default: false] // Si es una ruta exclusiva para premium
-  
-    usuario_creador_id int [ref: > usuarios.id]
-    fecha_creacion date
-    usuario_editor_id int [ref: > usuarios.id]
-    fecha_edicion date
-    usuario_eliminacion_id int [ref: > usuarios.id]
-    fecha_eliminacion date
-  }
-  Table horarios {
-    id int [pk, increment]
-    ruta_id int [ref: > ruta.id]
-    dia_semana varchar(10) [not null] // Lunes, Martes... Domingo, Festivos
-    hora_inicio time [not null]
-    hora_fin time [not null]
-    frecuencia_pico int // Minutos entre unidades
-    frecuencia_normal int
-  }
-  Table coordenadas {
-    id int [pk, increment]
-    ruta_id int [ref: > ruta.id]
-    latitud decimal(10, 6) [not null]
-    longitud decimal(10, 6) [not null]
-    orden int [not null] // Para definir el recorrido (1, 2, 3...)
-  }
-  
-  Table favoritos {
-    id int [pk, increment]
-    usuario_id int [ref: > usuarios.id]
-    ruta_id int [ref: > ruta.id]
-    created_at timestamp [default: `now()`]
-  }
-  
-  Table paradas {
-    id int [pk, increment]
-    nombre varchar(100) [not null] // Ej: "Parque Central"
-    direccion varchar(200)
-    latitud decimal(10, 6) [not null]
-    longitud decimal(10, 6) [not null]
-    tipo varchar(20) [default: "normal"] // normal, principal, intercambio
-    tiene_banquero boolean [default: false]
-    foto_url varchar(255) // Opcional
-  }
-  
+
+Table paradas {
+  id int [pk, increment]
+  nombre varchar(100) [not null] // Ej: "Parque Central"
+  direccion varchar(200)
+  latitud decimal(10, 6) [not null]
+  longitud decimal(10, 6) [not null]
+  tipo varchar(20) [default: "normal"] // normal, principal, intercambio
+  tiene_banquero boolean [default: false]
+}
+
 Table notificaciones {
     id int [pk, increment]
     usuario_id int [ref: > usuarios.id]
@@ -155,4 +164,3 @@ Table notificaciones {
     leido boolean [default: false]
     fecha timestamp [default: `now()`]
 }
-
