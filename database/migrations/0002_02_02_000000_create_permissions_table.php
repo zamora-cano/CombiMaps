@@ -10,7 +10,9 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 20);
+            $table->string('name')->unique();  // Example: 'create-users'
+            $table->string('display_name');    // Example: 'Create Users'
+            $table->string('group');          // Example: 'User Management'
             $table->timestamps();
         });
     }

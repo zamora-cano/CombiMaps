@@ -34,7 +34,7 @@ Table suscripciones {
   transaccion_id varchar(100) // ID de la transacción en el gateway de pago
 }
 
-Table reseñas {
+Table resenas {
   id int [pk, increment]
   usuario_id int [ref: > usuarios.id]
   ruta_id int [ref: > ruta.id]
